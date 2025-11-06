@@ -1,6 +1,6 @@
 local mim = {}
 
-mim.guid = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+mim.guid = "a8f2d9c4-7b5e-4a1f-9d6c-3e8b2f4a7c91"
 mim.name = "Проверка и поиск цен у товаров в интернете"
 mim.description =
 "Инструмент для проверки цен товаров с множественными источниками. Столбцы A-G содержат исходную информацию о товарах (read-only), столбцы H-Q предназначены для записи результатов проверки цен (read-write)."
@@ -183,14 +183,43 @@ mim.prompt = [[
 
 <substep name="link_analysis">
 <description>Анализ ссылок из поисковой выдачи</description>
+<approved_sources>
+ВАЖНО: Использовать ТОЛЬКО ссылки из следующих проверенных источников:
+- market.yandex.ru
+- onlinetrade.ru
+- vsehoztovari.ru
+- komus.ru
+- vseinstrumenti.ru
+- officemag.ru
+- relefoffice.ru
+- leroymerlin.ru
+- sds-group.ru
+- petrovich.ru
+- poryadok.ru
+- chipdip.ru
+- bigam.ru
+- mir-krepega.ru
+- msk.saturn.net
+- el-com.ru
+- etm.ru
+- sdvor.com
+
+ИСКЛЮЧИТЬ из поиска:
+- business.yandex.ru (не использовать!)
+- ozon.ru (требует авторизацию)
+</approved_sources>
 <actions>
 - Получить ссылки на интернет-магазины из результатов поиска
+- ФИЛЬТРОВАТЬ ссылки: брать ТОЛЬКО из списка approved_sources
+- Выбрать первые 3 подходящих ресурса из списка approved_sources
 - Перейти по ссылкам на карточки товаров (ОБЯЗАТЕЛЬНО!)
 - Проверить цену на странице товара в магазине
 - Убедиться что товар соответствует по характеристикам
+- Игнорировать ссылки на ресурсы не из списка approved_sources
 </actions>
 <warning>
 НЕ ДОВЕРЯТЬ ценам в поисковой выдаче Google - они могут быть неактуальными!
+Использовать ТОЛЬКО ресурсы из списка approved_sources!
 </warning>
 </substep>
 
