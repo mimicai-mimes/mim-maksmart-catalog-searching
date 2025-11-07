@@ -183,92 +183,89 @@ mim.prompt = [[
 <workflow>
 
 <step number="1" name="price_search">
-<description>Поиск цен товара с обязательным переходом на сайты</description>
+<description>Прямой поиск цен товара на сайтах магазинов</description>
 
-<critical_rule>
-ВАЖНО: НЕ БРАТЬ ЦЕНЫ ИЗ ПОИСКОВОЙ ВЫДАЧИ GOOGLE!
-Обязательно переходить по ссылкам на карточки товаров на сайтах магазинов для проверки реальных цен.
-</critical_rule>
-
-<substep name="search_initialization">
-<description>Инициализация поиска товара</description>
-<universal_actions>
-- NAVIGATE к поисковой системе (https://www.google.com?gl=ru&hl=ru или параметр /search?q=)
-- Сформировать поисковый запрос: наименование товара + артикул (если есть)
-- ИСПОЛЬЗОВАТЬ фильтр site: для поиска только на разрешенных ресурсах:
-  (site:market.yandex.ru OR site:onlinetrade.ru OR site:vsehoztovari.ru OR site:komus.ru OR site:vseinstrumenti.ru OR site:officemag.ru OR site:relefoffice.ru OR site:leroymerlin.ru OR site:sds-group.ru OR site:petrovich.ru OR site:poryadok.ru OR site:chipdip.ru OR site:bigam.ru OR site:mir-krepega.ru OR site:msk.saturn.net OR site:el-com.ru OR site:etm.ru OR site:sdvor.com)
-- Формат запроса: "название товара артикул (site:domain1.ru OR site:domain2.ru OR ...)"
-- Выполнить поиск
-- WAIT(2) - дождаться загрузки результатов
-- SNAPSHOT - получить список результатов поиска
-</universal_actions>
-<notes>
-- Использовать фильтр site: с оператором OR для поиска только на проверенных источниках
-- Это значительно сокращает количество нерелевантных результатов
-- Для perplexity: использовать прямой поиск через mcp_perplexity_perplexity_search с указанием доменов в запросе
-- Для playwright/chrome: открывать интересующие ссылки в новых вкладках, сохраняя вкладку с поиском
-</notes>
-</substep>
-
-<substep name="link_analysis">
-<description>Анализ и фильтрация ссылок из поисковой выдачи</description>
 <approved_sources>
-ВАЖНО: Использовать ТОЛЬКО ссылки из следующих проверенных источников:
-- market.yandex.ru
-- onlinetrade.ru
-- vsehoztovari.ru
-- komus.ru
-- vseinstrumenti.ru
-- officemag.ru
-- relefoffice.ru
-- leroymerlin.ru
-- sds-group.ru
-- petrovich.ru
-- poryadok.ru
-- chipdip.ru
-- bigam.ru
-- mir-krepega.ru
-- msk.saturn.net
-- el-com.ru
-- etm.ru
-- sdvor.com
+СПИСОК ПРОВЕРЕННЫХ ИСТОЧНИКОВ (использовать по порядку):
+1. vseinstrumenti.ru - URL поиска: https://www.vseinstrumenti.ru/search/?what=ЗАПРОС
+2. komus.ru - URL поиска: https://www.komus.ru/search?text=ЗАПРОС
+3. chipdip.ru - URL поиска: https://www.chipdip.ru/search?searchtext=ЗАПРОС
+4. el-com.ru - URL поиска: https://el-com.ru/search/?q=ЗАПРОС
+5. etm.ru - URL поиска: https://www.etm.ru/search/?q=ЗАПРОС
+6. petrovich.ru - URL поиска: https://petrovich.ru/search/?q=ЗАПРОС
+7. leroymerlin.ru - URL поиска: https://leroymerlin.ru/search/?q=ЗАПРОС
+8. sds-group.ru - URL поиска: https://www.sds-group.ru/search/?q=ЗАПРОС
+9. poryadok.ru - URL поиска: https://poryadok.ru/search/?text=ЗАПРОС
+10. bigam.ru - URL поиска: https://bigam.ru/search/?q=ЗАПРОС
+11. mir-krepega.ru - URL поиска: https://mir-krepega.ru/search/?q=ЗАПРОС
+12. onlinetrade.ru - URL поиска: https://www.onlinetrade.ru/search.html?text=ЗАПРОС
+13. officemag.ru - URL поиска: https://officemag.ru/search/?q=ЗАПРОС
+14. relefoffice.ru - URL поиска: https://relefoffice.ru/search/?q=ЗАПРОС
+15. sdvor.com - URL поиска: https://sdvor.com/search/?q=ЗАПРОС
+16. vsehoztovari.ru - URL поиска: https://vsehoztovari.ru/search/?q=ЗАПРОС
 
-ИСКЛЮЧИТЬ из поиска:
-- business.yandex.ru (не использовать!)
-- ozon.ru (требует авторизацию)
+ИСКАТЬ В ПОСЛЕДНЮЮ ОЧЕРЕДЬ (использовать только если не нашли в основных источниках):
+- onlinetrade.ru - URL поиска: https://www.onlinetrade.ru/search.html?text=ЗАПРОС
+- officemag.ru - URL поиска: https://officemag.ru/search/?q=ЗАПРОС
+- relefoffice.ru - URL поиска: https://relefoffice.ru/search/?q=ЗАПРОС
+
+ИСПОЛЬЗОВАТЬ В ПОСЛЕДНЮЮ ОЧЕРЕДЬ (только если не хватает цен из основных источников):
+- market.yandex.ru - URL поиска: https://market.yandex.ru/search?text=ЗАПРОС (может требовать авторизацию, пропустить если блокирует)
+- ozon.ru - URL поиска: https://www.ozon.ru/search/?text=ЗАПРОС (может требовать авторизацию, пропустить если блокирует)
+- msk.saturn.net (сложная навигация)
 </approved_sources>
+
+<substep name="direct_search">
+<description>Прямой поиск на сайтах магазинов</description>
 <universal_actions>
-- Анализировать SNAPSHOT результатов поиска
-- ФИЛЬТРОВАТЬ ссылки: выбрать ТОЛЬКО из списка approved_sources
-- Отобрать первые 3 подходящих ресурса из approved_sources
-- Для каждого источника:
-  * NAVIGATE(url) - перейти на карточку товара
-  * WAIT(2) - дождаться загрузки страницы
-  * SNAPSHOT - получить содержимое страницы товара
-  * Извлечь цену и проверить характеристики товара
-- Игнорировать ссылки на ресурсы не из списка approved_sources
+- Сформировать поисковый запрос: наименование товара + артикул (если есть)
+- Для Perplexity MCP:
+  * Использовать mcp_perplexity_perplexity_search с запросом включающим домены из approved_sources
+  * Формат: "название товара артикул site:vseinstrumenti.ru OR site:komus.ru OR site:chipdip.ru"
+  * Извлечь прямые ссылки на товары из результатов
+  
+- Для Chrome DevTools/Playwright MCP:
+  * Перебирать сайты из списка approved_sources по порядку
+  * NAVIGATE на страницу поиска конкретного магазина, подставив запрос в URL
+  * WAIT(2-3) - дождаться загрузки результатов поиска
+  * SNAPSHOT - получить содержимое страницы с результатами
+  * Найти ссылки на подходящие товары в результатах поиска
+  * Если товар найден - перейти к price_extraction
+  * Если товар не найден - перейти к следующему сайту из списка
+  
+- Продолжать перебор сайтов до получения 3 цен
 </universal_actions>
-<warning>
-НЕ ДОВЕРЯТЬ ценам в поисковой выдаче Google - они могут быть неактуальными!
-Использовать ТОЛЬКО ресурсы из списка approved_sources!
-</warning>
+<query_optimization>
+- Использовать точное название товара
+- Добавлять артикул если он есть
+- Убирать лишние слова и символы, которые могут мешать поиску
+- Для каждого сайта адаптировать запрос под его формат поиска
+</query_optimization>
 </substep>
 
-<substep name="price_collection">
-<description>Сбор цен с сайтов магазинов</description>
+<substep name="price_extraction">
+<description>Извлечение цены с карточки товара</description>
 <target_sources>3 источника (обязательно!)</target_sources>
 <universal_actions>
-- NAVIGATE - перейти на карточку товара в магазине
-- WAIT(2) - дождаться полной загрузки страницы
-- SNAPSHOT - получить содержимое страницы для анализа
+- NAVIGATE - перейти на карточку найденного товара
+- WAIT(2-3) - дождаться полной загрузки страницы
+- SNAPSHOT - получить содержимое страницы товара для анализа
 - Извлечь актуальную цену из содержимого страницы
 - Проверить наличие товара и возможность доставки в РФ
+- Проверить соответствие характеристик товара (размер, вес, упаковка и т.д.)
 - Зафиксировать цену только в российских рублях
+- Сохранить URL страницы товара
 - ОБЯЗАТЕЛЬНО найти цены из 3 разных источников
-- Продолжать поиск до получения 3 цен
+- Продолжать поиск на следующих сайтах до получения 3 цен
 </universal_actions>
+<validation>
+- Убедиться что цена актуальна (не зачеркнута, не "старая цена")
+- Проверить что товар в наличии или доступен для заказа
+- Убедиться что характеристики товара совпадают с искомым
+- Игнорировать товары "под заказ" или "нет в наличии" если есть альтернативы
+</validation>
 <sku_tracking>
-ВАЖНО: Отслеживать SKU товаров из базы данных для корректного сохранения! Но если есть SKU в записи!
+ВАЖНО: Отслеживать артикул/SKU товара для корректного сопоставления с базой данных!
 </sku_tracking>
 </substep>
 </step>
