@@ -205,20 +205,21 @@ mim.prompt = [[
 6. petrovich.ru - https://petrovich.ru/search/?q=ЗАПРОС
 7. leroymerlin.ru - https://leroymerlin.ru/search/?q=ЗАПРОС
 8. sds-group.ru - https://www.sds-group.ru/search/?q=ЗАПРОС
-9. poryadok.ru - https://poryadok.ru/search/?text=ЗАПРОС
-10. bigam.ru - https://bigam.ru/search/?q=ЗАПРОС
-11. mir-krepega.ru - https://mir-krepega.ru/search/?q=ЗАПРОС
-12. sdvor.com - https://sdvor.com/search/?q=ЗАПРОС
-13. vsehoztovari.ru - https://vsehoztovari.ru/search/?q=ЗАПРОС
+9. poryadok.ru - https://poryadok.ru/search/?q=ЗАПРОС
+10. bigam.ru - https://www.bigam.ru/?digiSearch=true&term=ЗАПРОС
+11. mir-krepega.ru - https://www.mir-krepega.ru/search/?q=ЗАПРОС
+12. sdvor.com - https://sdvor.com/ekb/search?freeTextSearch=ЗАПРОС
+13. vsehoztovari.ru - https://www.vsehoztovari.ru/search/?q=ЗАПРОС
+14. kuvalda.ru - https://www.kuvalda.ru/catalog/search/?keyword=ЗАПРОС
 
 ПРИОРИТЕТ 2 - ДОПОЛНИТЕЛЬНЫЕ (если недостаточно цен):
-14. onlinetrade.ru - https://www.onlinetrade.ru/search.html?text=ЗАПРОС
-15. officemag.ru - https://officemag.ru/search/?q=ЗАПРОС
-16. relefoffice.ru - https://relefoffice.ru/search/?q=ЗАПРОС
+15. onlinetrade.ru - https://www.onlinetrade.ru/search.html?text=ЗАПРОС
+16. officemag.ru - https://www.officemag.ru/search/?q=ЗАПРОС
+17. relefoffice.ru - https://www.relefoffice.ru/search/?q=ЗАПРОС
 
 ПРИОРИТЕТ 3 - ПРОБЛЕМНЫЕ (только если критически не хватает):
-17. market.yandex.ru - https://market.yandex.ru/search?text=ЗАПРОС (авто-пропуск при блокировке)
-18. ozon.ru - https://www.ozon.ru/search/?text=ЗАПРОС (авто-пропуск при блокировке)
+18. market.yandex.ru - https://market.yandex.ru/search?text=ЗАПРОС (авто-пропуск при блокировке)
+19. ozon.ru - https://www.ozon.ru/search/?text=ЗАПРОС (авто-пропуск при блокировке)
 
 ИСКЛЮЧЕНО (не использовать):
 - business.yandex.ru (требует авторизацию)
@@ -325,12 +326,12 @@ mim.prompt = [[
 АВТОМАТИЧЕСКАЯ СТРАТЕГИЯ ПЕРЕБОРА (без вопросов):
 - НЕ останавливаться после проверки первых 3 источников
 - Проверять последовательно ВСЕ источники:
-  * Сначала все 13 источников приоритета 1
+  * Сначала все 14 источников приоритета 1
   * Затем все 3 источника приоритета 2 (если нужно)
   * Затем все 2 источника приоритета 3 (если нужно)
 - Останавливаться ТОЛЬКО когда:
   * Найдено 3 цены → немедленное сохранение
-  * ИЛИ проверены ВСЕ 18 источников → сохранить найденное (0/1/2 цен)
+  * ИЛИ проверены ВСЕ 19 источников → сохранить найденное (0/1/2 цен)
 - При любом количестве найденных цен (1, 2 или 3) → сохранить результат
 </retry_logic>
 <optimization>
@@ -430,10 +431,10 @@ mim.prompt = [[
 <automatic_strategy>
 - Автоматический последовательный перебор ВСЕХ источников по приоритетам
 - НЕ останавливаться после 3 неудач - продолжать проверку всех источников
-- Проверить ВСЕ 13 источников приоритета 1, затем ВСЕ 3 источника приоритета 2, затем ВСЕ 2 источника приоритета 3
+- Проверить ВСЕ 14 источников приоритета 1, затем ВСЕ 3 источника приоритета 2, затем ВСЕ 2 источника приоритета 3
 - Завершить поиск только когда:
   * Найдено 3 цены (успех)
-  * ИЛИ проверены ВСЕ 18 доступных источников (сохранить то, что нашли: 0/1/2 цен)
+  * ИЛИ проверены ВСЕ 19 доступных источников (сохранить то, что нашли: 0/1/2 цен)
 - Сохранить найденные цены (даже если 0, 1 или 2)
 - НЕ спрашивать пользователя - продолжать автономно
 </automatic_strategy>
