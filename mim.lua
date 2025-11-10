@@ -213,7 +213,7 @@ mim.prompt = [[
 14. kuvalda.ru - https://www.kuvalda.ru/catalog/search/?keyword=ЗАПРОС
 
 ПРИОРИТЕТ 2 - ДОПОЛНИТЕЛЬНЫЕ (если недостаточно цен):
-15. onlinetrade.ru - https://www.onlinetrade.ru/search.html?text=ЗАПРОС
+15. onlinetrade.ru - https://www.onlinetrade.ru/sitesearch.html?query=ЗАПРОС
 16. officemag.ru - https://www.officemag.ru/search/?q=ЗАПРОС
 17. relefoffice.ru - https://www.relefoffice.ru/search/?q=ЗАПРОС
 
