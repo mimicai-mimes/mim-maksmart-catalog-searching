@@ -150,7 +150,7 @@ mim.prompt = [[
 
 <mcp_servers>
 - micmicai-mcp (для сохранения данных о entry)
-- browser (для поиска в интернете - может быть playwright, chrome-devtools или perplexity и другие)
+- browser (для поиска в интернете - может быть playwright или microsoft/playwright-mcp (альтернативное название))
 </mcp_servers>
 
 <tools>
@@ -159,34 +159,22 @@ mim.prompt = [[
 </micmicai-mcp>
 
 <browser_actions>
-УНИВЕРСАЛЬНЫЕ ДЕЙСТВИЯ (адаптируются под доступный MCP сервер):
-- NAVIGATE(url) - открыть веб-страницу
-- SNAPSHOT() - получить снимок/содержимое страницы для анализа
-- TYPE(element, text) - ввести текст в поле (для форм поиска)
-- CLICK(element) - кликнуть по элементу (по ссылке или кнопке)
-- WAIT(seconds) - ждать загрузки контента
+    УНИВЕРСАЛЬНЫЕ ДЕЙСТВИЯ (адаптируются под доступный MCP сервер):
+    - NAVIGATE(url) - открыть веб-страницу
+    - SNAPSHOT() - получить снимок/содержимое страницы для анализа
+    - TYPE(element, text) - ввести текст в поле (для форм поиска)
+    - CLICK(element) - кликнуть по элементу (по ссылке или кнопке)
+    - WAIT(seconds) - ждать загрузки контента
 
-РЕАЛИЗАЦИЯ ПО MCP СЕРВЕРАМ:
-<playwright>
-- NAVIGATE → mcp_chrome-devtoo_navigate_page(url)
-- SNAPSHOT → mcp_chrome-devtoo_take_snapshot()
-- TYPE → mcp_chrome-devtoo_fill(uid, value)
-- CLICK → mcp_chrome-devtoo_click(uid)
-- WAIT → mcp_chrome-devtoo_wait_for(text/time)
-</playwright>
+    РЕАЛИЗАЦИЯ ПО MCP СЕРВЕРАМ:
+    <playwright>
+    - NAVIGATE → browser_navigate(url)
+    - SNAPSHOT → browser_snapshot()
+    - TYPE → browser_type(uid, value)
+    - CLICK → browser_click(uid)
+    - WAIT → browser_wait_for(text_or_time)
+    </playwright>
 
-<chrome-devtools>
-- NAVIGATE → mcp_chrome-devtoo_navigate_page(url)
-- SNAPSHOT → mcp_chrome-devtoo_take_snapshot()
-- TYPE → mcp_chrome-devtoo_fill(uid, value)
-- CLICK → mcp_chrome-devtoo_click(uid)
-- WAIT → mcp_chrome-devtoo_wait_for(text/time)
-</chrome-devtools>
-
-<perplexity>
-- Использовать mcp_perplexity_perplexity_search(query) для поиска
-- Анализировать результаты поиска напрямую без навигации
-</perplexity>
 </browser_actions>
 </tools>
 
@@ -271,12 +259,7 @@ mim.prompt = [[
 
 - Сформировать запрос: название + артикул (если есть)
   
-- Для Perplexity MCP:
-  * mcp_perplexity_perplexity_search с комбинацией доменов из approved_sources
-  * Формат: "товар артикул site:vseinstrumenti.ru OR site:komus.ru..."
-  * Автоматически извлечь ссылки и перейти к price_extraction
-  
-- Для Chrome DevTools/Playwright:
+- Для Playwright:
   
   УРОВЕНЬ 1 - Прямой перебор приоритета 1:
   * Проверить все 14 источников приоритета 1 последовательно
