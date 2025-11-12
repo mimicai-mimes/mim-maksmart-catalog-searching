@@ -153,7 +153,7 @@ mim.prompt = [[
 
 <mcp_servers>
 - update_mim_entry (для сохранения результатов)
-- playwright-mcp (официальный @playwright/mcp для веб-автоматизации)
+- chrome-devtools-mcp (официальный Chrome DevTools MCP для веб-автоматизации)
 </mcp_servers>
 
 <tools>
@@ -161,16 +161,16 @@ mim.prompt = [[
 - update_mim_entry(entry_id, result_data) - сохранить найденные цены
 </mim_tools>
 
-<playwright_tools>
-ОФИЦИАЛЬНЫЕ ИНСТРУМЕНТЫ @playwright/mcp:
-- mcp_playwright-mc_browser_navigate(url) - открыть URL
-- mcp_playwright-mc_browser_snapshot() - получить accessibility snapshot страницы
-- mcp_playwright-mc_browser_click(element, ref) - клик по элементу для перехода на страницу товара
-- mcp_playwright-mc_browser_wait_for(time) - ожидание загрузки (в секундах)
-- mcp_playwright-mc_browser_close() - закрыть браузер
+<browser_tools>
+ОФИЦИАЛЬНЫЕ ИНСТРУМЕНТЫ Chrome DevTools MCP:
+- navigate(url) - открыть URL
+- screenshot() - сделать скриншот страницы
+- click(selector) - клик по элементу для перехода на страницу товара
+- evaluate(expression) - выполнить JavaScript на странице для извлечения данных
+- close() - закрыть браузер
 
-ВАЖНО: Используй ТОЧНЫЕ названия функций с префиксом mcp_playwright-mc_browser_*
-</playwright_tools>
+ВАЖНО: Используй Chrome DevTools Protocol для взаимодействия с браузером
+</browser_tools>
 </tools>
 
 <workflow>
@@ -239,14 +239,12 @@ mim.prompt = [[
   УРОВЕНЬ 1 - Однократная проверка приоритета 1 (16 источников):
   * Проверить источники приоритета 1 последовательно
   * Каждый источник: 
-    - mcp_playwright-mc_browser_navigate(url) → страница поиска
-    - mcp_playwright-mc_browser_wait_for({time: 2})
-    - mcp_playwright-mc_browser_snapshot() → анализ результатов поиска
+    - navigate(url) → страница поиска
+    - evaluate(expression) → извлечение HTML и анализ результатов поиска
     - ПРОВЕРКА ТОЧНОСТИ: найти товар с точным совпадением артикула ИЛИ названия
     - Если найден ТОЧНЫЙ товар:
-      * mcp_playwright-mc_browser_click(element, ref) → переход на страницу товара
-      * mcp_playwright-mc_browser_wait_for({time: 2})
-      * mcp_playwright-mc_browser_snapshot() → извлечение цены
+      * click(selector) → переход на страницу товара
+      * evaluate(expression) → извлечение цены со страницы товара
       * Сохранить URL ТЕКУЩЕЙ страницы товара (НЕ поиска!)
     - Если НЕТ точного совпадения → пропустить источник
   * Если найдено 2 цены → НЕМЕДЛЕННО сохранить и завершить (НЕ продолжать!)
@@ -318,17 +316,15 @@ mim.prompt = [[
 ДВУХЭТАПНЫЙ ПРОЦЕСС:
 
 ЭТАП 1 - ПОИСК И ПРОВЕРКА ТОЧНОСТИ:
-- mcp_playwright-mc_browser_navigate(url) → страница с результатами поиска
-- mcp_playwright-mc_browser_wait_for({time: 2}) → загрузка
-- mcp_playwright-mc_browser_snapshot() → извлечение списка результатов
+- navigate(url) → страница с результатами поиска
+- evaluate(expression) → извлечение списка результатов через JavaScript
 - АВТОМАТИЧЕСКАЯ ПРОВЕРКА: найти товар с ТОЧНЫМ совпадением (см. exact_match_validation)
 - Если НЕТ точного совпадения → пропустить источник, перейти к следующему
 - Если ЕСТЬ точное совпадение → переход к ЭТАПУ 2
 
 ЭТАП 2 - ПЕРЕХОД НА СТРАНИЦУ ТОВАРА И ИЗВЛЕЧЕНИЕ:
-- mcp_playwright-mc_browser_click(element, ref) → клик по найденному товару
-- mcp_playwright-mc_browser_wait_for({time: 2}) → загрузка страницы товара
-- mcp_playwright-mc_browser_snapshot() → извлечение цены со страницы товара
+- click(selector) → клик по найденному товару
+- evaluate(expression) → извлечение цены со страницы товара через JavaScript
 - Получить URL ТЕКУЩЕЙ страницы (страницы товара, НЕ поиска!)
 - Сохранить в память: цена + URL страницы товара
 - Если найдено 2 цены → НЕМЕДЛЕННО перейти к сохранению в БД
@@ -361,7 +357,7 @@ mim.prompt = [[
 - При наличии 2 цен с ТОЧНЫМ совпадением → НЕМЕДЛЕННОЕ сохранение и завершение
 - При наличии 0-1 цен после исчерпания ВСЕХ источников → сохранить найденное и завершить
 - update_mim_entry() вызывается ОДИН раз по завершении стратегии
-- mcp_playwright-mc_browser_close() после сохранения
+- close() после сохранения
 - Только рубли РФ
 
 ФОРМАТ СОХРАНЕНИЯ:
@@ -406,9 +402,9 @@ mim.prompt = [[
 
 <optimization>
 ЭКОНОМИЯ ТОКЕНОВ:
-- mcp_playwright-mc_browser_snapshot() - только при необходимости
+- evaluate(expression) - только при необходимости
 - НЕ писать длинные отчеты - только краткие факты
-- mcp_playwright-mc_browser_wait_for({time: 2}) для стабильности
+- Использовать setTimeout в JavaScript для задержек загрузки
 - Формат вывода: "[Источник N] [сайт]: [цена]₽ (точное совпадение)" или "нет совпадения"
 </optimization>
 </step>
@@ -535,7 +531,7 @@ mim.prompt = [[
 <technical_errors>
 <automatic_handling>
 - Авто-пропуск при блокировке/авторизации
-- mcp_playwright-mc_browser_wait_for({time: 2}) между запросами
+- Задержки между запросами через setTimeout
 - При зависании >10 сек - автоматический переход к следующему источнику
 - НЕТ логов для пользователя - только минимальный вывод
 </automatic_handling>
@@ -543,7 +539,7 @@ mim.prompt = [[
 
 <anti_blocking>
 <automatic_protection>
-- Задержки mcp_playwright-mc_browser_wait_for({time: 2})
+- Задержки между запросами для имитации человеческого поведения
 - Авто-пропуск капчи/блокировок
 - Переход к следующему источнику при проблемах
 </automatic_protection>
