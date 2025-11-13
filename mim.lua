@@ -165,15 +165,33 @@ mim.prompt = [[
 <playwright_tools>
 PLAYWRIGHT MCP (для Google поиска):
 - mcp_playwright-mc_browser_navigate(url) - открыть Google поиск
-- mcp_playwright-mc_browser_snapshot() - получить содержимое страницы с результатами (извлечь ссылки)
+- mcp_playwright-mc_browser_snapshot() - получить accessibility tree (текстовое представление страницы)
+- mcp_playwright-mc_browser_evaluate_script(function) - выполнить JavaScript для извлечения ссылок
 - mcp_playwright-mc_browser_close() - закрыть браузер после извлечения ссылок
 
-ИСПОЛЬЗОВАНИЕ:
-1. navigate → https://www.google.com/search?q=ЗАПРОС
-2. snapshot → извлечь URLs товаров из результатов поиска
-3. close → завершить работу с браузером
+ИСПОЛЬЗОВАНИЕ (2 МЕТОДА ИЗВЛЕЧЕНИЯ ССЫЛОК):
 
-ВАЖНО: Playwright используется ТОЛЬКО для Google поиска, чтобы получить список ссылок
+МЕТОД 1 - Через snapshot:
+1. navigate → https://www.google.com/search?q=ЗАПРОС
+2. snapshot → анализировать текст, искать URLs с одобренных доменов
+3. close → завершить
+
+МЕТОД 2 - Через evaluate_script (РЕКОМЕНДУЕТСЯ):
+1. navigate → https://www.google.com/search?q=ЗАПРОС
+2. evaluate_script → выполнить JS код для извлечения всех ссылок:
+   ```javascript
+   () => {
+     const links = Array.from(document.querySelectorAll('a'));
+     return links.map(a => a.href).filter(href => href && href.startsWith('http'));
+   }
+   ```
+3. Отфильтровать ссылки по одобренным доменам
+4. close → завершить
+
+ВАЖНО: 
+- Playwright используется ТОЛЬКО для Google поиска
+- evaluate_script даёт прямой доступ к ссылкам на странице (надёжнее snapshot)
+- Фильтрация по доменам выполняется после получения всех ссылок
 </playwright_tools>
 
 <fetch_tools>
@@ -224,17 +242,28 @@ vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru, petrovich.ru,
 <automatic_workflow>
 АВТОМАТИЧЕСКАЯ СТРАТЕГИЯ (БЕЗ вопросов пользователю):
 
-ЭТАП 0 - GOOGLE ПОИСК БЕЗ ФИЛЬТРА (быстрая предварительная проверка):
+ЭТАП 0 - GOOGLE ПОИСК БЕЗ ФИЛЬТРА (быстрая предварительная проверка, 2 страницы):
 1. Сформировать Google запрос БЕЗ фильтра site: (фильтр не работает):
    "НАЗВАНИЕ_ТОВАРА АРТИКУЛ купить"
    
-2. Выполнить через Playwright MCP:
+2. Выполнить через Playwright MCP (проверка 2 страниц):
+   СТРАНИЦА 1 (обязательно):
    - browser_navigate("https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить")
-   - browser_snapshot() → получить все ссылки из результатов
+   - browser_snapshot() → получить все ссылки из результатов страницы 1
+   - Отфильтровать по одобренным доменам и типу (только товары)
+   - Подсчитать количество найденных подходящих ссылок
+   
+   СТРАНИЦА 2 (условно):
+   - Если на странице 1 найдено <5 подходящих ссылок с одобренных доменов:
+     * browser_navigate("https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить&start=10")
+     * browser_snapshot() → получить все ссылки из результатов страницы 2
+     * Отфильтровать по одобренным доменам и типу (только товары)
+   - Если уже найдено ≥5 ссылок → пропустить страницу 2 (экономия времени)
+   
    - browser_close()
 
 3. Отфильтровать результаты по одобренным доменам:
-   - Извлечь ВСЕ ссылки из snapshot
+   - Извлечь ВСЕ ссылки из snapshot (со страницы 1 и 2)
    - Отобрать ТОЛЬКО ссылки на товары с одобренных доменов:
      * vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru
      * petrovich.ru, sds-group.ru, poryadok.ru, bigam.ru, mirkrepega.ru
@@ -303,28 +332,61 @@ GOOGLE ПОИСК С PLAYWRIGHT (только для получения ссыл
    - market.yandex.ru (приоритет 2)
    - ozon.ru (приоритет 2)
 
-2. ВЫПОЛНЕНИЕ ПОИСКА ЧЕРЕЗ PLAYWRIGHT:
-   ШАГ 1: Открыть Google БЕЗ фильтра
+2. ВЫПОЛНЕНИЕ ПОИСКА ЧЕРЕЗ PLAYWRIGHT (2 страницы):
+   ШАГ 1: Открыть Google БЕЗ фильтра (страница 1)
    - mcp_playwright-mc_browser_navigate({url: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить"})
    
-   ШАГ 2: Получить снимок страницы и отфильтровать ссылки
-   - mcp_playwright-mc_browser_snapshot() → получить текстовое представление результатов
-   - Извлечь ВСЕ URLs из результатов поиска
-   - ФИЛЬТРАЦИЯ ПО ДОМЕНАМ: Оставить ТОЛЬКО ссылки на разрешённые домены из списка выше
-   - ФИЛЬТРАЦИЯ ПО ТИПУ: ТОЛЬКО прямые ссылки на товары (НЕ на поиск, НЕ на категории)
-   - Примеры ПОДХОДЯЩИХ URLs (с одобренных доменов):
+   ШАГ 2: Получить снимок страницы 1 и извлечь ссылки
+   - mcp_playwright-mc_browser_snapshot() → получить accessibility tree (текстовое представление)
+   
+   КРИТИЧЕСКИ ВАЖНО - ИЗВЛЕЧЕНИЕ ССЫЛОК:
+   - Snapshot содержит текст И URLs элементов
+   - В snapshot искать строки, содержащие домены из списка одобренных
+   - Извлекать полные URLs, которые видны в тексте snapshot
+   - Пример: если в snapshot есть "ВсеИнструменты.ru" и рядом URL, извлечь этот URL
+   
+   АЛЬТЕРНАТИВНЫЙ МЕТОД (если snapshot не содержит URLs):
+   - Использовать mcp_playwright-mc_browser_evaluate_script() для извлечения ссылок:
+     ```javascript
+     () => {
+       const links = Array.from(document.querySelectorAll('a'));
+       return links
+         .map(a => a.href)
+         .filter(href => href && href.startsWith('http'));
+     }
+     ```
+   - Это вернёт массив всех ссылок на странице
+   
+   - ФИЛЬТРАЦИЯ ПО ДОМЕНАМ: Оставить ТОЛЬКО ссылки на разрешённые домены:
+     * vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru
+     * petrovich.ru, sds-group.ru, poryadok.ru, bigam.ru, mirkrepega.ru
+     * sdvor.com, kuvalda.ru, onlinetrade.ru, chipdip.ru, el-com.ru
+   
+   - ФИЛЬТРАЦИЯ ПО ТИПУ: Исключить ссылки на:
+     ✗ /search, /catalog (без ID товара), /category
+     ✓ Страницы с конкретными товарами
+   
+   - Примеры ПОДХОДЯЩИХ URLs:
+     ✓ https://www.vseinstrumenti.ru/product/meshok-polipropilenovy/
      ✓ https://www.chipdip.ru/product/klemma-wago-221-615
-     ✓ https://korelektro.ru/catalog/klemmy/112993/
-     ✓ https://www.vseinstrumenti.ru/instrument/item/12345/
-   - Примеры НЕПОДХОДЯЩИХ URLs:
-     ✗ https://site.ru/search?q=товар (страница поиска)
-     ✗ https://site.ru/catalog/ (страница категории)
+     ✓ https://komus.ru/product/1217140/
+   - Примеры НЕПОДХОДЯЩИХ:
+     ✗ https://vseinstrumenti.ru/search?q=товар
+     ✗ https://vseinstrumenti.ru/catalog/
      ✗ https://unknownshop.ru/product/123 (домен не из списка!)
    
-   ШАГ 3: Закрыть браузер
+   ШАГ 3: Перейти на страницу 2 Google (если нужно больше результатов)
+   - Если на странице 1 найдено <5 подходящих ссылок с одобренных доменов:
+     * mcp_playwright-mc_browser_navigate({url: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить&start=10"})
+     * mcp_playwright-mc_browser_snapshot() → получить результаты страницы 2
+       (или evaluate_script для извлечения ссылок - тот же метод что на странице 1)
+     * Извлечь и отфильтровать URLs (та же логика)
+   - Если уже найдено ≥5 ссылок с одобренных доменов → пропустить страницу 2
+   
+   ШАГ 4: Закрыть браузер
    - mcp_playwright-mc_browser_close()
    
-   РЕЗУЛЬТАТ: Список URLs товаров с ОДОБРЕННЫХ доменов (до 10-15 первых подходящих)
+   РЕЗУЛЬТАТ: Список URLs товаров с ОДОБРЕННЫХ доменов (до 15-20 ссылок с 2 страниц)
 
 3. ПРОВЕРКА НАЙДЕННЫХ ТОВАРОВ ЧЕРЕЗ FETCH:
    - Для каждого отобранного URL товара (с одобренного домена):
@@ -563,8 +625,10 @@ GOOGLE ПОИСК С PLAYWRIGHT (только для получения ссыл
 <retry_logic>
 ТРЁХЭТАПНАЯ СТРАТЕГИЯ С ОПТИМИЗАЦИЕЙ ЧЕРЕЗ GOOGLE:
 
-ЭТАП 0 - Google БЕЗ фильтра с отбором (быстрая предпроверка):
-- ОДИН запрос в Google БЕЗ фильтра site: (через Playwright MCP)
+ЭТАП 0 - Google БЕЗ фильтра с отбором (быстрая предпроверка, 2 страницы):
+- ДВА запроса в Google БЕЗ фильтра site: (через Playwright MCP):
+  * Страница 1: start=0 (первые 10 результатов)
+  * Страница 2: start=10 (результаты 11-20) - если на странице 1 мало ссылок с одобренных доменов
 - Отбор ссылок с одобренных доменов из всех результатов поиска
 - Проверка отобранных товаров на совпадение характеристик (через fetch)
 - Запоминание проверенных доменов
