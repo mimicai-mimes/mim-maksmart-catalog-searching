@@ -131,6 +131,11 @@ mim.prompt = [[
 ---
 title: "Автоматизированный поиск цен на маркетплейсах"
 
+# РОЛЬ И ПРАВИЛА
+role:
+  description: "Автономный агент поиска цен товаров на маркетплейсах БЕЗ взаимодействия с пользователем"
+  output: "Минимизируй токены - только факты поиска и результаты"
+
 # КОНФИГУРАЦИЯ
 approved_domains: &domains
   - "vseinstrumenti.ru"
@@ -150,15 +155,11 @@ approved_domains: &domains
   - "el-com.ru"
 
 search_strategy: &strategy
-  stage_0: "Google поиск → отбор по доменам → проверка через fetch"
-  stage_1: "Прямая проверка непроверенных сайтов приоритета 1"
-  stage_2: "Проблемные источники (Яндекс.Маркет)"
+  stage_0: "Google поиск → отбор по доменам → проверка через Playwright"
+  stage_1: "Прямая проверка непроверенных сайтов приоритета 1 через Playwright"
+  stage_2: "Проблемные источники (Яндекс.Маркет) через Playwright"
   stop_condition: "2 цены с совпадающими характеристиками ИЛИ исчерпание источников"
 
-# РОЛЬ И ПРАВИЛА
-role:
-  description: "Автономный агент поиска цен товаров на маркетплейсах БЕЗ взаимодействия с пользователем"
-  output: "Минимизируй токены - только факты поиска и результаты"
 
 automation_rules:
   - "НЕ задавать вопросы - принимать решения самостоятельно"
@@ -172,28 +173,24 @@ automation_rules:
 
 # ИНСТРУМЕНТЫ
 tools:
-  fetch:
-    usage: "Загрузка веб-страниц (поиск + товары)"
-    copilot_id: "#fetch"
-    signature: "fetch(urls: string[], query: string)"
-    parameters:
-      urls: "Массив URL для загрузки"
-      query: "Описание поискового запроса"
-    examples:
-      - 'fetch(["https://site.ru/search?q=товар"], "товары с артикулами")'
-      - 'fetch(["https://site.ru/product/123"], "цена в рублях")'
-
   playwright_mcp:
-    usage: "ТОЛЬКО для Google поиска → извлечение ссылок → ОБЯЗАТЕЛЬНОЕ закрытие"
+    usage: "Все веб-взаимодействия: Google поиск, страницы результатов поиска, страницы товаров"
     copilot_id: "#playwright-mcp"
     methods:
-      navigate: "#browser_navigate"
-      snapshot: "#browser_snapshot"
-      evaluate: "#browser_evaluate"
-      click: "#browser_click"
-      close: "#browser_close"
-    query_format: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ"
+      navigate: "#browser_navigate - переход на любой URL"
+      snapshot: "#browser_snapshot - захват состояния страницы"
+      evaluate: "#browser_evaluate - извлечение данных со страницы"
+      click: "#browser_click - взаимодействие с элементами"
+      close: "#browser_close - ОБЯЗАТЕЛЬНОЕ закрытие перед сохранением"
+    patterns:
+      google_search: "navigate → snapshot → evaluate для извлечения ссылок"
+      search_page: "navigate → snapshot → evaluate для получения товаров и цен"
+      product_page: "navigate → snapshot → evaluate для извлечения цены и артикула"
     cleanup: "ВСЕГДА вызывать #browser_close перед update_entry_fields"
+    examples:
+      - 'navigate("https://www.google.com/search?q=товар+артикул") → snapshot → evaluate для ссылок'
+      - 'navigate("https://site.ru/search?q=товар") → snapshot → evaluate для цен'
+      - 'navigate("https://site.ru/product/123") → snapshot → evaluate для деталей'
 
   update_entry_fields:
     usage: "Сохранение результатов в БД"
@@ -212,18 +209,20 @@ workflow:
 
   execution:
     google_search:
-      action: "Playwright → Google БЕЗ фильтра site: → отбор по доменам → fetch проверка"
+      action: "Playwright → Google БЕЗ фильтра site: → отбор по доменам → Playwright проверка"
       pages: "2 страницы (start=0, start=10 если нужно)"
       filter: "Только прямые ссылки на товары с одобренных доменов"
+      pattern: "navigate(google) → snapshot → evaluate(ссылки) → для каждой: navigate(url) → snapshot → evaluate(цена)"
       domain_filter: |
         ОБЯЗАТЕЛЬНАЯ фильтрация при отборе ссылок из Google:
         - Извлечь домен из каждой найденной ссылки
         - Проверить наличие в approved_domains (vseinstrumenti.ru, komus.ru, и т.д.)
         - ИГНОРИРОВАТЬ все ссылки с доменов вне списка (например: abis-prof.ru, и др.)
-        - Передавать в fetch ТОЛЬКО ссылки с одобренных доменов
+        - Проверять через Playwright navigate ТОЛЬКО ссылки с одобренных доменов
 
     direct_search:
-      action: "fetch прямых источников, ПРОПУСКАЯ уже проверенные через Google"
+      action: "Playwright navigate прямых источников, ПРОПУСКАЯ уже проверенные через Google"
+      pattern: "navigate(search_url) → snapshot → evaluate(товары и цены)"
       priority_1: "15 основных источников"
       priority_2: "Яндекс.Маркет (если <2 цен)"
 
