@@ -229,11 +229,10 @@ PLAYWRIGHT MCP (для Google поиска):
 14. chipdip.ru - https://www.chipdip.ru/search?searchtext=ЗАПРОС
 15. el-com.ru - https://www.el-com.ru/catalog-search/?s=Поиск&q=ЗАПРОС
 
-ПРИОРИТЕТ 2 - ПРОБЛЕМНЫЕ (2 шт, только если не нашли 2 цены):
+ПРИОРИТЕТ 2 - ПРОБЛЕМНЫЕ (1 шт, только если не нашли 2 цены):
 16. market.yandex.ru - https://market.yandex.ru/search?text=ЗАПРОС (авто-пропуск при блокировке)
-17. ozon.ru - https://www.ozon.ru/search/?text=ЗАПРОС (авто-пропуск при блокировке)
 
-ВСЕГО: 17 источников (15 + 2)
+ВСЕГО: 17 источников (15 + 1)
 
 ДОМЕНЫ ДЛЯ GOOGLE ФИЛЬТРА:
 vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru, petrovich.ru, sds-group.ru, poryadok.ru, bigam.ru, mirkrepega.ru, sdvor.com, kuvalda.ru, onlinetrade.ru, chipdip.ru, el-com.ru
@@ -268,7 +267,7 @@ vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru, petrovich.ru,
      * vseinstrumenti.ru, komus.ru, officemag.ru, relefoffice.ru, etm.ru
      * petrovich.ru, sds-group.ru, poryadok.ru, bigam.ru, mirkrepega.ru
      * sdvor.com, kuvalda.ru, onlinetrade.ru, chipdip.ru, el-com.ru
-     * market.yandex.ru, ozon.ru (приоритет 2)
+     * market.yandex.ru (приоритет 2)
    - Исключить ссылки на страницы поиска/категорий (только страницы товаров)
    
 4. Проверить отобранные товары через fetch:
@@ -330,8 +329,7 @@ GOOGLE ПОИСК С PLAYWRIGHT (только для получения ссыл
    - chipdip.ru
    - el-com.ru
    - market.yandex.ru (приоритет 2)
-   - ozon.ru (приоритет 2)
-
+   
 2. ВЫПОЛНЕНИЕ ПОИСКА ЧЕРЕЗ PLAYWRIGHT (2 страницы):
    ШАГ 1: Открыть Google БЕЗ фильтра (страница 1)
    - mcp_playwright-mc_browser_navigate({url: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить"})
@@ -640,7 +638,7 @@ GOOGLE ПОИСК С PLAYWRIGHT (только для получения ссыл
 - СТОП если найдено 2 цены с совпадением
 
 ЭТАП 2 - Проблемные источники:
-- До 2 источников приоритета 2 (Яндекс.Маркет, Ozon)
+- До 2 источников приоритета 2 (Яндекс.Маркет)
 - СТОП после последнего источника или при достижении 2 цен
 
 ПРАВИЛА:
@@ -804,7 +802,7 @@ GOOGLE ПОИСК С PLAYWRIGHT (только для получения ссыл
 - Если <2 цен после всех доступных → переход к ЭТАПУ 2
 
 ЭТАП 2 - Проблемные источники:
-- Проверить до 2 источников приоритета 2 (Яндекс.Маркет, Ozon)
+- Проверить до 2 источников приоритета 2 (Яндекс.Маркет)
 - Завершить поиск ОБЯЗАТЕЛЬНО когда:
   * Найдено 2 цены с совпадающими характеристиками → СТОП, сохранить, завершить
   * ИЛИ проверен последний доступный источник → СТОП, сохранить найденное (0/1/2 цен), завершить
