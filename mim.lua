@@ -151,34 +151,52 @@ mim.prompt = [[
 9. ТРЕБОВАНИЕ ССЫЛОК: Сохранять ПРЯМЫЕ ссылки на страницу товара, НЕ на результаты поиска
 </automation_rules>
 
-<mcp_servers>
-- update_mim_entry (для сохранения результатов)
-- fetch_webpage (встроенный в VS Code Copilot Chat, для прямого доступа к страницам товаров)
-- mcp_playwright-mc (для выполнения Google поиска и извлечения ссылок)
-</mcp_servers>
+<available_tools>
+ДОСТУПНЫЕ ИНСТРУМЕНТЫ (используй через #):
+
+1. #fetch_webpage - загрузка веб-страниц (встроенный в copilot)
+   Вызов: #fetch_webpage(urls, query)
+   Параметры:
+   - urls: массив URL (например: ["https://site.ru/product"])
+   - query: что искать ("цена, артикул, название")
+   Использование: загрузка страниц поиска и товаров
+
+2. Playwright MCP - браузерные операции (для Google поиска):
+   - #mcp_playwright-mc_browser_navigate - открыть URL
+   - #mcp_playwright-mc_browser_snapshot - получить содержимое страницы
+   - #mcp_playwright-mc_browser_evaluate - выполнить JavaScript
+   - #mcp_playwright-mc_browser_close - закрыть браузер
+   - #mcp_playwright-mc_browser_click - кликнуть на элемент
+
+3. #mcp_micmicai-mcp_update_entry_fields - обновление результатов в БД
+   Вызов: mcp_micmicai-mcp_update_entry_fields(entry_id, fields)
+</available_tools>
 
 <tools>
 <mim_tools>
-- update_mim_entry(entry_id, result_data) - сохранить найденные цены
+ИНСТРУМЕНТ: #mcp_micmicai-mcp_update_entry_fields
+- Назначение: обновление результатов в БД
+- Сигнатура: mcp_micmicai-mcp_update_entry_fields(entry_id, fields)
 </mim_tools>
 
 <playwright_tools>
 PLAYWRIGHT MCP (для Google поиска):
-- mcp_playwright-mc_browser_navigate(url) - открыть Google поиск
-- mcp_playwright-mc_browser_snapshot() - получить accessibility tree (текстовое представление страницы)
-- mcp_playwright-mc_browser_evaluate_script(function) - выполнить JavaScript для извлечения ссылок
-- mcp_playwright-mc_browser_close() - закрыть браузер после извлечения ссылок
+- #mcp_playwright-mc_browser_navigate - открыть Google поиск
+- #mcp_playwright-mc_browser_snapshot - получить accessibility tree (текстовое представление страницы)
+- #mcp_playwright-mc_browser_evaluate - выполнить JavaScript для извлечения ссылок
+- #mcp_playwright-mc_browser_close - закрыть браузер после извлечения ссылок
+- #mcp_playwright-mc_browser_click - кликнуть на элемент
 
 ИСПОЛЬЗОВАНИЕ (2 МЕТОДА ИЗВЛЕЧЕНИЯ ССЫЛОК):
 
 МЕТОД 1 - Через snapshot:
-1. navigate → https://www.google.com/search?q=ЗАПРОС
-2. snapshot → анализировать текст, искать URLs с одобренных доменов
-3. close → завершить
+1. #mcp_playwright-mc_browser_navigate → https://www.google.com/search?q=ЗАПРОС
+2. #mcp_playwright-mc_browser_snapshot → анализировать текст, искать URLs с одобренных доменов
+3. #mcp_playwright-mc_browser_close → завершить
 
-МЕТОД 2 - Через evaluate_script (РЕКОМЕНДУЕТСЯ):
-1. navigate → https://www.google.com/search?q=ЗАПРОС
-2. evaluate_script → выполнить JS код для извлечения всех ссылок:
+МЕТОД 2 - Через evaluate (РЕКОМЕНДУЕТСЯ):
+1. #mcp_playwright-mc_browser_navigate → https://www.google.com/search?q=ЗАПРОС
+2. #mcp_playwright-mc_browser_evaluate → выполнить JS код для извлечения всех ссылок:
    ```javascript
    () => {
      const links = Array.from(document.querySelectorAll('a'));
@@ -186,23 +204,35 @@ PLAYWRIGHT MCP (для Google поиска):
    }
    ```
 3. Отфильтровать ссылки по одобренным доменам
-4. close → завершить
+4. #mcp_playwright-mc_browser_close → завершить
 
 ВАЖНО: 
 - Playwright используется ТОЛЬКО для Google поиска
-- evaluate_script даёт прямой доступ к ссылкам на странице (надёжнее snapshot)
+- #mcp_playwright-mc_browser_evaluate даёт прямой доступ к ссылкам на странице (надёжнее snapshot)
 - Фильтрация по доменам выполняется после получения всех ссылок
 </playwright_tools>
 
 <fetch_tools>
-ВСТРОЕННЫЙ ИНСТРУМЕНТ VS Code Copilot (для страниц товаров):
-- fetch_webpage(urls, query) - получить содержимое веб-страницы
-  * urls: массив URL для загрузки
-  * query: описание того, что нужно найти на странице
-  
-ИСПОЛЬЗОВАНИЕ: Загрузка страниц товаров (найденных через Google или прямым поиском) для извлечения цен
+ИНСТРУМЕНТ: #fetch_webpage (встроенный в copilot)
 
-ВАЖНО: fetch_webpage возвращает текстовый контент страницы, который нужно анализировать
+СТАТУС: ✓ ДОСТУПЕН - используй напрямую!
+
+СИГНАТУРА:
+  fetch_webpage(urls: string[], query: string) -> string
+
+ПАРАМЕТРЫ:
+  urls - массив URL для загрузки: ["https://example.com/product"]
+  query - описание что искать: "цена товара, артикул, название"
+
+ВОЗВРАЩАЕТ:
+  Текстовое содержимое страницы для анализа
+
+ПРИМЕРЫ:
+  fetch_webpage(["https://www.vseinstrumenti.ru/search/?what=клемма"], "товары с артикулами")
+  fetch_webpage(["https://www.chipdip.ru/product/123"], "цена в рублях")
+
+ИСПОЛЬЗОВАНИЕ:
+  Загрузка страниц товаров и результатов поиска (НЕ для Google - там используй Playwright)
 </fetch_tools>
 </tools>
 
