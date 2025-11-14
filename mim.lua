@@ -172,19 +172,35 @@ automation_rules:
 tools:
   fetch:
     usage: "Загрузка веб-страниц (поиск + товары)"
-    signature: "fetch([urls], 'описание_поиска')"
+    copilot_id: "#fetch"
+    signature: "fetch(urls: string[], query: string)"
+    parameters:
+      urls: "Массив URL для загрузки"
+      query: "Описание поискового запроса"
     examples:
       - 'fetch(["https://site.ru/search?q=товар"], "товары с артикулами")'
       - 'fetch(["https://site.ru/product/123"], "цена в рублях")'
 
-  playwright:
+  playwright_mcp:
     usage: "ТОЛЬКО для Google поиска → извлечение ссылок"
-    methods: "browser_navigate → browser_snapshot/browser_evaluate → browser_close"
-    query_format: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ+купить"
+    copilot_id: "#playwright-mcp"
+    methods:
+      navigate: "#browser_navigate"
+      snapshot: "#browser_snapshot"
+      evaluate: "#browser_evaluate"
+      click: "#browser_click"
+      close: "#browser_close"
+    query_format: "https://www.google.com/search?q=НАЗВАНИЕ+АРТИКУЛ"
 
-  update_entry:
+  update_entry_fields:
     usage: "Сохранение результатов в БД"
-    signature: "update_entry_fields(entry_id, {H: цена1, I: url1, J: цена2, K: url2})"
+    copilot_id: "#update_entry_fields"
+    signature: "update_entry_fields(entry_id: string, fields: object)"
+    parameters:
+      entry_id: "ID записи (например 'entry-0')"
+      fields: "Объект с полями {H: цена1, I: url1, J: цена2, K: url2}"
+    examples:
+      - 'update_entry_fields("entry-0", {H: "1500", I: "https://site.ru/product/123"})'
 
 # СТРАТЕГИЯ ПОИСКА
 workflow:
