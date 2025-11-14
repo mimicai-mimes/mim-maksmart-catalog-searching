@@ -153,6 +153,7 @@ approved_domains: &domains
   - "onlinetrade.ru"
   - "chipdip.ru"
   - "el-com.ru"
+  - "market.yandex.ru"
 
 search_strategy: &strategy
   stage_0: "Google поиск → отбор по доменам → проверка через Playwright"
