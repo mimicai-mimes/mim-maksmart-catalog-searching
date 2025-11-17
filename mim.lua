@@ -1,6 +1,6 @@
 local mim = {}
 
-mim.guid = "b7e3f8d1-9c4a-4e2b-8f5d-6a1c3b9e7f42"
+mim.guid = "a3f2c8e6-4d7b-4a1e-9f3c-2b5d8e1a6c9f"
 mim.name = "[Maksmart] Поиск товаров на внутреннем маркетплейсе"
 mim.description =
 "Инструмент для поиска товаров на внутреннем маркетплейсе maksmart.ru. Столбец A содержит исходное наименование товара (read-only), столбцы C-E предназначены для записи результатов поиска (read-write)."
