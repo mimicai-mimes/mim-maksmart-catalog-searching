@@ -215,6 +215,7 @@ automation_rules:
   - "ЦЕЛЬ ПОИСКА: Найти 2 цены для товара из любой комбинации источников"
   - "APPROVED_DOMAINS: 16 источников - все одобренные домены для проверки"
   - "IMPORTANT_DOMAINS: 6 важных источников - использовать если не хватает цен после Google"
+  - "УЧЕТ ПРОВЕРЕННЫХ: ОБЯЗАТЕЛЬНО вести список проверенных доменов, НЕ проверять повторно"
   - "КРИТЕРИЙ ОСТАНОВКИ: Найдены 2 цены → СТОП немедленно"
   - "Сохранять результаты сразу после нахождения 2 цен"
   - "Закрывать браузер Playwright ПОСЛЕ сохранения результатов"
@@ -279,14 +280,21 @@ workflow:
       action: "Проверка приоритетных источников из Google в порядке их приоритетности (1-16)"
       pattern: "navigate(url) → snapshot → evaluate(цена и артикул)"
       order: "Проверять в порядке позиций в списке approved_domains (vseinstrumenti.ru=1, komus.ru=2, и т.д.)"
+      tracking: "ОБЯЗАТЕЛЬНО вести учет проверенных доменов для исключения из additional_sources_check"
       stop_condition: "Найдены 2 цены → СТОП"
       next_step: "Если найдено < 2 цен → переходить к additional_sources_check"
 
     additional_sources_check:
       action: "Проверка 6 важных источников из important_domains (НЕ найденных в Google)"
       pattern: "navigate(search_url) → snapshot → evaluate(товары и цены)"
-      limit: "Максимум 6 источников из important_domains (пропуская уже проверенные через Google)"
+      limit: "Максимум 6 источников из important_domains"
       priority: "Проверять в порядке перечисления в important_domains"
+      exclusion: |
+        КРИТИЧЕСКИ ВАЖНО - ИСКЛЮЧЕНИЕ УЖЕ ПРОВЕРЕННЫХ:
+        - Взять список important_domains (6 источников)
+        - ИСКЛЮЧИТЬ все домены, которые уже были проверены через Google в priority_sources_check
+        - Проверять ТОЛЬКО оставшиеся непроверенные домены
+        - Пример: если vseinstrumenti.ru и komus.ru уже проверены через Google → проверить только market.yandex.ru, onlinetrade.ru, chipdip.ru, etm.ru
       stop_condition: "Найдено 2 цены ВСЕГО (из Google + important_domains) → СТОП"
 
     stop_rules:
