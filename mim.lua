@@ -267,6 +267,11 @@ workflow:
       pages: "1 страница (start=0)"
       filter: "Только прямые ссылки на товары с одобренных доменов (16 приоритетных)"
       pattern: "navigate(google) → snapshot → evaluate(ссылки) → анализ приоритетности"
+      query_format: |
+        ОБЯЗАТЕЛЬНЫЙ ФОРМАТ ЗАПРОСА В GOOGLE:
+        НАЗВАНИЕ АРТИКУЛ site:*.vseinstrumenti.ru OR site:*.komus.ru OR site:market.yandex.ru OR site:*.officemag.ru OR site:relefoffice.ru OR site:*.etm.ru OR site:*.petrovich.ru OR site:*.sds-group.ru OR site:*.poryadok.ru OR site:*.bigam.ru OR site:mirkrepega.ru OR site:*.sdvor.com OR site:kuvalda.ru OR site:*.onlinetrade.ru OR site:*.chipdip.ru OR site:*.el-com.ru"
+        
+        Это гарантирует, что Google вернёт результаты ТОЛЬКО с одобренных доменов.
       domain_filter: |
         ОБЯЗАТЕЛЬНАЯ фильтрация при отборе ссылок из Google:
         - Извлечь домен из каждой найденной ссылки
