@@ -176,6 +176,7 @@ role:
 approved_domains: &domains
   - "vseinstrumenti.ru"
   - "komus.ru"
+  - "market.yandex.ru"
   - "officemag.ru"
   - "relefoffice.ru"
   - "etm.ru"
@@ -296,6 +297,7 @@ sources:
   priority_1:
     - {domain: "vseinstrumenti.ru", url: "https://www.vseinstrumenti.ru/search/?what=ЗАПРОС"}
     - {domain: "komus.ru", url: "https://www.komus.ru/search?text=ЗАПРОС"}
+    - {domain: "market.yandex.ru", url: "https://market.yandex.ru/search?text=ЗАПРОС"}
     - {domain: "officemag.ru", url: "https://www.officemag.ru/search/?q=ЗАПРОС"}
     - {domain: "relefoffice.ru", url: "https://www.relefoffice.ru/search/?q=ЗАПРОС"}
     - {domain: "etm.ru", url: "https://www.etm.ru/catalog?searchValue=ЗАПРОС"}
