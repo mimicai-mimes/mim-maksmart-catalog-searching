@@ -3,7 +3,7 @@ local mim = {}
 mim.guid = "b7e3f8d1-9c4a-4e2b-8f5d-6a1c3b9e7f42"
 mim.name = "[Конкретный список] Проверка и поиск цен у товаров в интернете через поиск"
 mim.description =
-"Инструмент для проверки цен товаров с множественными источниками. Столбцы A-G содержат исходную информацию о товарах (read-only), столбцы H-Q предназначены для записи результатов проверки цен (read-write)."
+"Инструмент для поиска товаров на маркетплейсах. Столбцы A-B содержат исходную информацию о товарах (read-only), столбцы C-E предназначены для записи результатов поиска (read-write)."
 
 mim.columns = {
     A = {
@@ -18,109 +18,25 @@ mim.columns = {
         description = "Единица измерения товара (шт, кг, м и т.д.) (read-only)",
         field_type = "STRING",
         is_required = false,
-        read_only = true
+        read_only = false
     },
     C = {
-        label = "Артикул",
-        description = "Артикул товара (read-only)",
+        label = "Ссылка на товар на сайте",
+        description = "Прямая ссылка на найденный товар на маркетплейсе (read-write)",
         field_type = "STRING",
         is_required = false,
-        read_only = true
+        read_only = false
     },
     D = {
-        label = "Цена б2с с ндс",
-        description = "Цена для физических лиц с НДС (read-only)",
+        label = "Наименование карточки товара на сайте",
+        description = "Название товара, как указано на сайте маркетплейса (read-write)",
         field_type = "STRING",
         is_required = false,
-        read_only = true
+        read_only = false
     },
     E = {
-        label = "Предпочтительный источник проверки 1",
-        description = "Первый предпочтительный источник для проверки цены (read-only)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = true
-    },
-    F = {
-        label = "Предпочтительный источник проверки 2",
-        description = "Второй предпочтительный источник для проверки цены (read-only)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = true
-    },
-    G = {
-        label = "Предпочтительный источник проверки 3",
-        description = "Третий предпочтительный источник для проверки цены (read-only)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = true
-    },
-    H = {
-        label = "Цена источник 1",
-        description = "Цена из первого источника (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    I = {
-        label = "Ссылка источник 1",
-        description = "Ссылка на товар в первом источнике (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    J = {
-        label = "Цена источник 2",
-        description = "Цена из второго источника (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    K = {
-        label = "Ссылка источник 2",
-        description = "Ссылка на товар во втором источнике (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    L = {
-        label = "Цена источник 3",
-        description = "Цена из третьего источника (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    M = {
-        label = "Ссылка источник 3",
-        description = "Ссылка на товар в третьем источнике (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    N = {
-        label = "Цена источник 4",
-        description = "Цена из четвертого источника (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    O = {
-        label = "Ссылка источник 4",
-        description = "Ссылка на товар в четвертом источнике (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    P = {
-        label = "Цена источник 5",
-        description = "Цена из пятого источника (read-write)",
-        field_type = "STRING",
-        is_required = false,
-        read_only = false
-    },
-    Q = {
-        label = "Ссылка источник 5",
-        description = "Ссылка на товар в пятом источнике (read-write)",
+        label = "Цена с сайта",
+        description = "Цена товара с маркетплейса (read-write)",
         field_type = "STRING",
         is_required = false,
         read_only = false
@@ -180,7 +96,7 @@ role:
     Перед выполнением крупных действий (переход на сайт, проверка результата) коротко (1 предложение) сообщай план:
     Примеры:
       - "→ Открываю Google: поиск '[ЗАПРОС]' (страница 1/2)"
-      - "→ Проверяю vseinstrumenti.ru: артикул + цена"
+      - "→ Проверяю vseinstrumenti.ru: название + цена"
       - "→ Переход на найденную ссылку: https://site.ru/product/123"
 
 # КОНФИГУРАЦИЯ
@@ -215,24 +131,23 @@ google_site_filter: &site_filter "site:*.vseinstrumenti.ru OR site:*.komus.ru OR
 search_strategy: &strategy
   step_1: "Google поиск (первая страница) → анализ выдачи на наличие источников из approved_domains"
   step_2: "Проверка найденных источников из Google в порядке их приоритетности (из approved_domains)"
-  step_3: "Если не хватает цен → проверка 6 важных источников (important_domains) пропуская уже проверенные"
-  goal: "Найти 2 цены для товара из любой комбинации источников"
-  stop_condition: "Найдены 2 цены → СТОП"
+  step_3: "Если не найдено → проверка 6 важных источников (important_domains) пропуская уже проверенные"
+  goal: "Найти 1 товар с ценой из любого источника"
+  stop_condition: "Найден товар с ценой → СТОП"
 
 
 automation_rules:
   - "НЕ задавать вопросы - принимать решения самостоятельно"
   - "Автоматически выбирать оптимальную стратегию поиска"
-  - "ЦЕЛЬ ПОИСКА: Найти РОВНО 2 цены для товара из любой комбинации источников"
-  - "МАКСИМУМ ИСТОЧНИКОВ: Сохранять ТОЛЬКО 2 источника (поля H,I,J,K), НЕ использовать L,M,N,O,P,Q"
+  - "ЦЕЛЬ ПОИСКА: Найти 1 товар с ценой из любого источника"
   - "APPROVED_DOMAINS: 16 источников - все одобренные домены для проверки"
-  - "IMPORTANT_DOMAINS: 6 важных источников - использовать если не хватает цен после Google"
+  - "IMPORTANT_DOMAINS: 6 важных источников - использовать если не найдено в Google"
   - "УЧЕТ ПРОВЕРЕННЫХ: ОБЯЗАТЕЛЬНО вести список проверенных доменов, НЕ проверять повторно"
-  - "КРИТЕРИЙ ОСТАНОВКИ: Найдены 2 цены → СТОП немедленно, НЕ искать третью"
-  - "Сохранять результаты сразу после нахождения 2 цен"
+  - "КРИТЕРИЙ ОСТАНОВКИ: Найден товар с ценой → СТОП немедленно"
+  - "Сохранять результаты сразу после нахождения товара"
   - "Закрывать браузер Playwright ПОСЛЕ сохранения результатов"
   - "ЗАПРЕЩЕНО переформулировать запросы и проверять источники повторно"
-  - "ТРЕБОВАНИЕ СОВПАДЕНИЯ: проверять ключевые характеристики и артикул"
+  - "ТРЕБОВАНИЕ СОВПАДЕНИЯ: проверять соответствие названия товара"
   - "ТРЕБОВАНИЕ ССЫЛОК: сохранять ПРЯМЫЕ ссылки на товар, НЕ на поиск"
   - "КРИТИЧЕСКОЕ ТРЕБОВАНИЕ ВАЛИДАЦИИ ДОМЕНОВ: перед сохранением ОБЯЗАТЕЛЬНО проверить, что домен из ссылки присутствует в списке approved_domains. ЗАПРЕЩЕНО сохранять ссылки с доменов, не указанных в списке."
 
@@ -258,14 +173,14 @@ tools:
       - 'navigate("https://site.ru/product/123") → snapshot → evaluate для деталей'
 
   update_entry_fields:
-    usage: "Сохранение результатов в БД (ТОЛЬКО 2 цены максимум)"
+    usage: "Сохранение результатов в БД (1 товар)"
     copilot_id: "#update_entry_fields"
     signature: "update_entry_fields(entry_id: string, fields: object)"
     parameters:
       entry_id: "ID записи (например 'entry-0')"
-      fields: "Объект с полями {H: цена1, I: url1, J: цена2, K: url2} - МАКСИМУМ 2 ИСТОЧНИКА"
+      fields: "Объект с полями {C: url, D: название, E: цена}"
     examples:
-      - 'update_entry_fields("entry-0", {H: "1500", I: "https://site.ru/product/123", J: "1600", K: "https://site2.ru/product/456"})'
+      - 'update_entry_fields("entry-0", {C: "https://site.ru/product/123", D: "Название товара с сайта", E: "1500"})'
 
 # СТРАТЕГИЯ ПОИСКА
 workflow:
