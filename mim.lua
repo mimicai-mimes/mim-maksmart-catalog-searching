@@ -200,6 +200,7 @@ important_domains: &important
   - "chipdip.ru"
   - "etm.ru"
 
+google_site_filter: &site_filter "site:*.vseinstrumenti.ru OR site:*.komus.ru OR site:market.yandex.ru OR site:*.officemag.ru OR site:relefoffice.ru OR site:*.etm.ru OR site:*.petrovich.ru OR site:*.sds-group.ru OR site:*.poryadok.ru OR site:*.bigam.ru OR site:mirkrepega.ru OR site:*.sdvor.com OR site:kuvalda.ru OR site:*.onlinetrade.ru OR site:*.chipdip.ru OR site:*.el-com.ru"
 
 search_strategy: &strategy
   step_1: "Google поиск (первая страница) → анализ выдачи на наличие источников из approved_domains"
@@ -260,6 +261,7 @@ workflow:
   strategy: *strategy
   domains: *domains
   important: *important
+  site_filter: *site_filter
 
   execution:
     google_search:
@@ -269,7 +271,11 @@ workflow:
       pattern: "navigate(google) → snapshot → evaluate(ссылки) → анализ приоритетности"
       query_format: |
         ОБЯЗАТЕЛЬНЫЙ ФОРМАТ ЗАПРОСА В GOOGLE:
-        НАЗВАНИЕ АРТИКУЛ site:*.vseinstrumenti.ru OR site:*.komus.ru OR site:market.yandex.ru OR site:*.officemag.ru OR site:relefoffice.ru OR site:*.etm.ru OR site:*.petrovich.ru OR site:*.sds-group.ru OR site:*.poryadok.ru OR site:*.bigam.ru OR site:mirkrepega.ru OR site:*.sdvor.com OR site:kuvalda.ru OR site:*.onlinetrade.ru OR site:*.chipdip.ru OR site:*.el-com.ru"
+        НАЗВАНИЕ АРТИКУЛ [ФИЛЬТР_ИЗ_site_filter]
+        
+        Где [ФИЛЬТР_ИЗ_site_filter] - это значение из переменной site_filter.
+        
+        Пример: "iPhone 13 128GB site:*.vseinstrumenti.ru OR site:*.komus.ru OR site:market.yandex.ru OR site:*.officemag.ru OR site:relefoffice.ru OR site:*.etm.ru OR site:*.petrovich.ru OR site:*.sds-group.ru OR site:*.poryadok.ru OR site:*.bigam.ru OR site:mirkrepega.ru OR site:*.sdvor.com OR site:kuvalda.ru OR site:*.onlinetrade.ru OR site:*.chipdip.ru OR site:*.el-com.ru"
         
         Это гарантирует, что Google вернёт результаты ТОЛЬКО с одобренных доменов.
       domain_filter: |
